@@ -99,7 +99,6 @@
 		addi $t0, $0, 0 # i
 		jal length # arg is $a0
 		move $t1, $v1 # length of char *
-		li $t1, 4
 		addi $v1, $0, 0 # res
 		convertStringToInt_while:
 			beq $t0, $t1, convertStringToInt_end_while # if (i == len) end_while
