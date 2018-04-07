@@ -88,42 +88,6 @@ char* Date(int day, int month, int year, char* TIME) {
     return TIME;
 }
 
-//hàm số 2 trong yêu cầu giải quyết thao tác 2
-//Chuyển dổi định dạng chuỗi
-char* Convert(char* TIME, char type) {
-    if (type == 'A') {
-        // swap time[0], time[3]
-        char temp = TIME[0];
-        TIME[0] = TIME[3];
-        TIME[3] = temp;
-        
-        // swap time[1], time[4]
-        temp = TIME[1];
-        TIME[1] = TIME[4];
-        TIME[4] = temp;
-    }
-    if (type == 'B') {
-        // swap time[0], time[3]
-        char temp = TIME[0];
-        TIME[0] = TIME[3];
-        TIME[3] = temp;
-        
-        TIME[2] = ' ';
-        
-        // swap time[1], time[4]
-        temp = TIME[1];
-        TIME[1] = TIME[4];
-        TIME[4] = temp;
-        
-        TIME[5] = ',';
-    }
-    if (type == 'C') {
-        TIME[2] = ' ';
-        TIME[5] = ',';
-    }
-    return TIME;
-}
-
 //hàm số 3 trong yêu cầu
 //lấy giá trị ngày từ chuỗi TIME
 int Day(char* TIME) {
@@ -158,11 +122,113 @@ int Year(char* TIME) {
     return res;
 }
 
-//hàm số 6 trong yêu cầu  giải quyết thao tác 4
+char* getNameMonth(int month) {
+    if (month == 1) return "Jan";
+    if (month == 2) return "Feb";
+    if (month == 3) return "Mar";
+    if (month == 4) return "Apr";
+    if (month == 5) return "May";
+    if (month == 6) return "Jun";
+    if (month == 7) return "Jul";
+    if (month == 8) return "Aug";
+    if (month == 9) return "Sep";
+    if (month == 10) return "Oct";
+    if (month == 11) return "Nov";
+    return "Dec";
+}
+
+//hàm số 2 trong yêu cầu giải quyết thao tác 2
+//Chuyển dổi định dạng chuỗi
+char* Convert(char* TIME, char type) {
+    if (type == 'A') {
+        // swap time[0], time[3]
+        char temp = TIME[0];
+        TIME[0] = TIME[3];
+        TIME[3] = temp;
+        
+        // swap time[1], time[4]
+        temp = TIME[1];
+        TIME[1] = TIME[4];
+        TIME[4] = temp;
+        return TIME;
+    }
+    int day = Day(TIME);
+    int month = Month(TIME);
+    int year = Year(TIME);
+    
+    char* temp = new char [3];
+    temp = getNameMonth(month);
+    
+    if (type == 'B') {
+        TIME[0] = temp[0];
+        TIME[1] = temp[1];
+        TIME[2] = temp[2];
+        TIME[3] = ' ';
+        TIME[4] = (day / 10) + '0';
+        TIME[5] = (day % 10) + '0';
+    }
+    if (type == 'C') {
+        TIME[0] = (day / 10) + '0';
+        TIME[1] = (day % 10) + '0';
+        TIME[2] = ' ';
+        TIME[3] = temp[0];
+        TIME[4] = temp[1];
+        TIME[5] = temp[2];
+    }
+    
+    TIME[6] = ',';
+    TIME[7] = ' ';
+    TIME[8] = (year / 1000) + '0';
+    TIME[9] = ((year % 1000) / 100) + '0';
+    TIME[10] = ((year % 100) / 10) + '0';
+    TIME[11] = (year % 10) + '0';
+    TIME[12] = '\0';
+    
+    return TIME;
+}
+
+//hàm số 6 trong yêu cầu giải quyết thao tác 4
 //Kiểm tra năm nhuận
 int LeapYear(char* TIME) {
     int year = Year(TIME);
     return isLeapYear(year);
+}
+
+//hàm số 7 trong yêu cầu giải quyết thao tác 5
+//Tính khoảng thời gian cách biệt giữa giá trị năm
+int  GetTime(char* TIME_1, char* TIME_2) {
+    int year1 = Year(TIME_1);
+    int year2 = Year(TIME_2);
+    int day1, day2, month1 = 0, month2;
+    
+    if (year1 == year2) return 0;
+    
+    if (year1 < year2) {
+        day1 = Day(TIME_1);
+        month1 = Month(TIME_1);
+        year1 = Year(TIME_1);
+        
+        day2 = Day(TIME_2);
+        month2 = Month(TIME_2);
+        year2 = Year(TIME_2);
+    }
+    
+    if (year1 > year2) {
+        day1 = Day(TIME_2);
+        month1 = Month(TIME_2);
+        year1 = Year(TIME_2);
+        
+        day2 = Day(TIME_1);
+        month2 = Month(TIME_1);
+        year2 = Year(TIME_1);
+    }
+    
+    if (month1 < month2) return year2 - year1;
+    if (month1 > month2) return year2 - year1 - 1;
+    if (month1 == month2)
+        if (day1 <= day2) return year2 - year1;
+    
+    return year2 - year1 - 1;
 }
 
 //hàm số 8 trong yêu cầu giải quyết thao tác 3
@@ -207,6 +273,30 @@ char* Weekday(char* TIME) {
     return "Fri";
 }
 
+//hàm giải quyết thao tác 3
+//hàm nhận chuỗi TIME và trả về 2 năm nhuận gần nhất với năm trong chuỗi TIME
+//lưu ở year1 và year2
+void getLeapYearNearest(char* TIME, int &year1, int &year2) {
+    int year = Year(TIME);
+    year1 = year2 = -1;
+    
+    for (int i = 1; i < 8; i++) {
+        if (isLeapYear(year - i)){
+            if (year1 == -1) year1 = year - i;
+                else {
+                    year2 = year - i;
+                    return;
+                }
+        }
+        if (isLeapYear(year + i)){
+            if (year1 == -1) year1 = year + i;
+            else {
+                year2 = year + i;
+                return;
+            }
+        }
+    }
+}
 
 int main() {
     char* day = new char[100];
@@ -244,7 +334,7 @@ int main() {
         } else printf("Hay nhap lai ");
     }
     
-    char* TIME = new char [10];
+    char* TIME = new char [12];
     Date(dayInt, monthInt, yearInt, TIME);
     
     if (choiceInt == 1) {
@@ -252,8 +342,8 @@ int main() {
     }
     if (choiceInt == 2) {
         printf("A. MM/DD/YYYY\n");
-        printf("B. MM DD,YYYY\n");
-        printf("C. DD MM,YYYY\n");
+        printf("B. Month DD, YYYY\n");
+        printf("C. DD Month, YYYY\n");
         char type;
         printf("Nhap lua chon(A, B, C): "); scanf("%c", &type);
         printf("%s", Convert(TIME, type));
@@ -263,6 +353,16 @@ int main() {
     }
     if (choiceInt == 4) {
         printf("%d", LeapYear(TIME));
+    }
+    if (choiceInt == 5) {
+        char* temp = new char [10];
+        Date(7, 4, 2018, temp);
+        printf("%d", GetTime(temp, TIME));
+    }
+    if (choiceInt == 6) {
+        int year1, year2;
+        getLeapYearNearest(TIME, year1, year2);
+        printf("%d %d", year1, year2);
     }
     return 0;
 }
