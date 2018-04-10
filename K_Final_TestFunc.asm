@@ -59,3 +59,23 @@
 	addi $a0, $v0, 0
 	addi $v0, $0, 4
 	syscall
+	# test Convert type A
+	la $a0, test1
+	addi $a1, $0, 'C'
+	jal Convert
+	addi $a0, $v0, 0
+	addi $v0, $0, 4
+	syscall
+	# test LeapYear
+	la $a0, test1
+	jal LeapYear
+	addi $a0, $v0, 0
+	addi $v0, $0, 1
+	syscall
+	# test GetTime
+	la $a0, test1
+	la $a1, test2
+	jal GetTime
+	addi $a0, $v0, 0
+	addi $v0, $0, 1
+	syscall
