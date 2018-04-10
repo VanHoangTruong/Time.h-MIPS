@@ -1,5 +1,6 @@
 .data
-	test1: .asciiz ""
+	test1: .asciiz "30/01/2018"
+	test2: .asciiz "30/01/1998"
 .text
 main:
 	
@@ -18,8 +19,8 @@ convertStringToInt:
 	addi $t0, $0, 0 #tmp
 	convertStringToInt_while:
 		lb $t1, 0($a0)
-		addi $t2, $0, '\0'
-		beq $t1, $t2, convertStringToInt_end_func # if input[i] == '\0' break
+		addi $t2, $0, '\n'
+		beq $t1, $t2, convertStringToInt_end_func # if input[i] == '\n' break
 		lb $t1, 0($a0)
 		addi $t2, $0, '0'
 		slt $t0, $t1, $t2 # if input[i] < '0'
@@ -488,3 +489,232 @@ getNameMonth:
 	lw $a3, 16($sp)
 	addi $sp, $sp, 100
 	jr $ra
+Convert:
+	addi $sp, $sp, -100
+	sw $ra, 0($sp)
+	sw $a0, 4($sp)
+	sw $a1, 8($sp)
+	sw $a2, 12($sp)
+	sw $a3, 16($sp)
+	sw $s0, 20($sp) # day
+	sw $s1, 24($sp) # month
+	sw $s2, 28($sp) # year
+	sw $s3, 32($sp) # name of month
+	addi $t0, $0, 'A'
+	beq $a1, $t0, Convert_A
+	jal Day
+	addi $s0, $v0, 0
+	jal Month
+	addi $s1, $v0, 0
+	jal Year
+	addi $s2, $v0, 0
+	addi $s3, $a0, 0 # save $a0
+	addi $a0, $s1, 0
+	jal getNameMonth
+	addi $a0, $s3, 0 # restore $a0
+	addi $s3, $v0, 0
+	addi $t0, $0, 'B'
+	beq $a1, $t0, Convert_B
+	addi $t0, $0, 'C'
+	beq $a1, $t0, Convert_C
+	Convert_A:
+		# swap TIME[0], TIME[3]
+		lb $t0, 0($a0)
+		lb $t1, 3($a0)
+		sb $t1, 0($a0)
+		sb $t0, 3($a0) # end
+		# swap TIME[1], TIME[4]
+		lb $t0, 1($a0)
+		lb $t1, 4($a0)
+		sb $t1, 1($a0)
+		sb $t0, 4($a0) # end
+		addi $v0, $a0, 0
+		j Convert_end_func
+	Convert_B:
+		lb $t0, 0($s3)
+		sb $t0, 0($a0)
+		lb $t0, 1($s3)
+		sb $t0, 1($a0)
+		lb $t0, 2($s3)
+		sb $t0, 2($a0)
+		addi $t0, $0, ' '
+		sb $t0, 3($a0)
+		addi $t0, $0, 10
+		div $s0, $t0
+		mflo $t0
+		addi $t0, $t0, '0'
+		sb $t0, 4($a0)
+		mfhi $t0
+		addi $t0, $t0, '0'
+		sb $t0, 5($a0)
+		j Convert_pre_end_func
+	Convert_C:
+		lb $t0, 0($s3)
+		sb $t0, 3($a0)
+		lb $t0, 1($s3)
+		sb $t0, 4($a0)
+		lb $t0, 2($s3)
+		sb $t0, 5($a0)
+		addi $t0, $0, ' '
+		sb $t0, 2($a0)
+		addi $t0, $0, 10
+		div $s0, $t0
+		mflo $t0
+		addi $t0, $t0, '0'
+		sb $t0, 0($a0)
+		mfhi $t0
+		addi $t0, $t0, '0'
+		sb $t0, 1($a0)
+		j Convert_pre_end_func
+	Convert_pre_end_func:
+		addi $t0, $0, ','
+		sb $t0, 6($a0)
+		addi $t0, $0, ' '
+		sb $t0, 7($a0)
+		addi $t0, $0, 10
+		div $s2, $t0
+		mfhi $t1
+		addi $t1, $t1, '0'
+		sb $t1, 11($a0)
+		mflo $s2
+		div $s2, $t0
+		mfhi $t1
+		addi $t1, $t1, '0'
+		sb $t1, 10($a0)
+		mflo $s2
+		div $s2, $t0
+		mfhi $t1
+		addi $t1, $t1, '0'
+		sb $t1, 9($a0)
+		mflo $s2
+		div $s2, $t0
+		mfhi $t1
+		addi $t1, $t1, '0'
+		sb $t1, 8($a0)
+		addi $t0, $0, '\0'
+		sb $t0, 12($a0)
+		addi $v0, $a0, 0
+	Convert_end_func:
+	lw $ra, 0($sp)
+	lw $a0, 4($sp)
+	lw $a1, 8($sp)
+	lw $a2, 12($sp)
+	lw $a3, 16($sp)
+	lw $s0, 20($sp)
+	lw $s1, 24($sp)
+	lw $s2, 28($sp)
+	lw $s3, 32($sp)
+	addi $sp, $sp, 100
+	jr $ra
+LeapYear:
+	addi $sp, $sp, -100
+	sw $ra, 0($sp)
+	sw $a0, 4($sp)
+	sw $a1, 8($sp)
+	sw $a2, 12($sp)
+	sw $a3, 16($sp)
+	jal Year
+	addi $a0, $v0, 0
+	jal isLeapYear
+	LeapYear_end_func:
+	lw $ra, 0($sp)
+	lw $a0, 4($sp)
+	lw $a1, 8($sp)
+	lw $a2, 12($sp)
+	lw $a3, 16($sp)
+	addi $sp, $sp, 100
+	jr $ra
+GetTime:
+	addi $sp, $sp, -100
+	sw $ra, 0($sp)
+	sw $a0, 4($sp)
+	sw $a1, 8($sp)
+	sw $a2, 12($sp)
+	sw $a3, 16($sp)
+	sw $s0, 20($sp) # year 1
+	sw $s1, 24($sp) # year 2
+	sw $s2, 28($sp) # day 1
+	sw $s3, 32($sp) # day 2
+	sw $s4, 36($sp) # month 1
+	sw $s5, 40($sp) # month 2
+	
+	jal Year
+	addi $s0, $v0, 0
+	addi $s1, $a0, 0
+	addi $a0, $a1, 0
+	jal Year
+	addi $a0, $s1, 0
+	addi $s1, $v0, 0
+	
+	beq $s0, $s2, GetTime_year1_eq_year2
+	slt $t0, $s0, $s1
+	bne $t0, $0, GetTime_year1_lt_year2
+		# year_2_lt_year 1
+		addi $s0, $a0, 0
+		addi $a0, $a1, 0
+		jal Day
+		addi $s2, $v0, 0
+		jal Month
+		addi $s4, $v0, 0
+		jal Year
+		addi $a0, $s0, 0
+		addi $s0, $v0, 0
+		
+		jal Day
+		addi $s3, $v0, 0
+		jal Month
+		addi $s5, $v0, 0
+		jal Year
+		addi $a0, $s1, 0
+		add $s1, $v0, 0
+	j GetTime_process_month
+	GetTime_year1_lt_year2:
+		jal Day
+		addi $s2, $v0, 0
+		jal Month
+		addi $s4, $v0, 0
+		jal Year
+		addi $s0, $v0, 0
+		
+		addi $s1, $a0, 0
+		addi $a0, $a1, 0
+		jal Day
+		addi $s3, $v0, 0
+		jal Month
+		addi $s5, $v0, 0
+		jal Year
+		addi $a0, $s1, 0
+		add $s1, $v0, 0
+	GetTime_process_month:
+		slt $t0, $s4, $s5
+		bne $t0, $0, GetTime_month1_lt_month2
+		slt $t0, $s5, $s4
+		bne $t0, $0, GetTime_month2_lt_month1
+		# month2 == month1
+		slt $t0, $s3, $s2
+		beq $t0, $0, GetTime_day1_lte_day2
+		# return year2 -  year1 -1
+		sub $v0, $s1, $s0
+		addi $v0, $v0, -1
+		GetTime_month1_lt_month2:
+			sub $v0, $s1, $s0
+			j GetTime_end_func
+		GetTime_month2_lt_month1:
+			sub $v0, $s1, $s0
+			addi $v0, $v0, -1
+			j GetTime_end_func
+		GetTime_day1_lte_day2:
+			sub $v0, $s1, $s0
+			j GetTime_end_func
+	GetTime_year1_eq_year2:
+		addi $v0, $0, 0
+		j GetTime_end_func
+	GetTime_end_func:
+	lw $ra, 0($sp)
+	lw $a0, 4($sp)
+	lw $a1, 8($sp)
+	lw $a2, 12($sp)
+	lw $a3, 16($sp)
+	addi $sp, $sp, 100
+	jr $ra
+
