@@ -1,5 +1,5 @@
 .data
-	test1: .asciiz "30/01/2018"
+	test1: .asciiz "12/04/2018"
 	test2: .asciiz "30/01/1998"
 .text
 main:
@@ -715,6 +715,278 @@ GetTime:
 	lw $a1, 8($sp)
 	lw $a2, 12($sp)
 	lw $a3, 16($sp)
+	lw $s0, 20($sp) # year 1
+	lw $s1, 24($sp) # year 2
+	lw $s2, 28($sp) # day 1
+	lw $s3, 32($sp) # day 2
+	lw $s4, 36($sp) # month 1
+	lw $s5, 40($sp) # month 2
 	addi $sp, $sp, 100
 	jr $ra
-
+Weekday:
+	addi $sp, $sp, -100
+	sw $ra, 0($sp)
+	sw $a0, 4($sp)
+	sw $a1, 8($sp)
+	sw $a2, 12($sp)
+	sw $a3, 16($sp)
+	sw $s0, 20($sp) #day
+	sw $s1, 24($sp) #month
+	sw $s2, 28($sp) #year
+	sw $s3, 32($sp)
+	
+	jal Day
+	addi $s0, $v0, 0
+	jal Month
+	addi $s1, $v0, 0
+	jal Year
+	addi $s2, $v0, 0
+	
+	add $t0, $0, 12
+	beq $s1, $t0, Weekday_case_month12
+	addi $t0, $t0, -1
+	beq $s1, $t0, Weekday_case_month11
+	addi $t0, $t0, -1	
+	beq $s1, $t0, Weekday_case_month10
+	addi $t0, $t0, -1
+	beq $s1, $t0, Weekday_case_month9
+	addi $t0, $t0, -1
+	beq $s1, $t0, Weekday_case_month8
+	addi $t0, $t0, -1
+	beq $s1, $t0, Weekday_case_month7
+	addi $t0, $t0, -1
+	beq $s1, $t0, Weekday_case_month6
+	addi $t0, $t0, -1
+	beq $s1, $t0, Weekday_case_month5
+	addi $t0, $t0, -1
+	beq $s1, $t0, Weekday_case_month4
+	addi $t0, $t0, -1
+	beq $s1, $t0, Weekday_case_month3
+	addi $t0, $t0, -1
+	beq $s1, $t0, Weekday_case_month2
+	addi $t0, $t0, -1
+	beq $s1, $t0, Weekday_case_month1
+	Weekday_case_month12:
+		addi $s0, $s0, 5
+		j Weekday_check_leapyear
+	Weekday_case_month11:
+		addi $s0, $s0, 3
+		j Weekday_check_leapyear
+	Weekday_case_month10:
+		addi $s0, $s0, 0
+		j Weekday_check_leapyear
+	Weekday_case_month9:
+		addi $s0, $s0, 5
+		j Weekday_check_leapyear
+	Weekday_case_month8:
+		addi $s0, $s0, 2
+		j Weekday_check_leapyear
+	Weekday_case_month7:
+		addi $s0, $s0, 6
+		j Weekday_check_leapyear
+	Weekday_case_month6:
+		addi $s0, $s0, 4
+		j Weekday_check_leapyear
+	Weekday_case_month5:
+		addi $s0, $s0, 1
+		j Weekday_check_leapyear
+	Weekday_case_month4:
+		addi $s0, $s0, 6
+		j Weekday_check_leapyear
+	Weekday_case_month3:
+		addi $s0, $s0, 3
+		j Weekday_check_leapyear
+	Weekday_case_month2:
+		addi $s0, $s0, 3
+		j Weekday_check_leapyear
+	Weekday_case_month1:
+		addi $s0, $s0, 0
+		j Weekday_check_leapyear
+	Weekday_check_leapyear:
+		addi $a0, $s2, 0
+		jal isLeapYear
+		bne $v0, $0, Weekday_next_process
+		addi $t0, $0, 1
+		beq $s1, $t0, Weekday_if_month1
+		addi $t0, $t0, 1
+		beq $s1, $t0, Weekday_if_month2
+		j Weekday_next_process
+		Weekday_if_month1:
+			addi $s0, $s0, 6
+			j Weekday_next_process
+		Weekday_if_month2:
+			addi $s0, $s0, -1
+			j Weekday_next_process
+	Weekday_next_process:
+		add $s0, $s0, $s2 # temp = temp + year
+		addi $t0, $0, 4
+		div $s2, $t0
+		mflo $t1
+		add $s0, $s0, $t1
+		addi $t0, $0, 100
+		div $s2, $t0
+		mflo $t1
+		sub $s0, $s0, $t1
+		addi $t0, $0, 400
+		div $s2, $t0
+		mflo $t1
+		add $s0, $s0, $t1
+		addi $t0, $0 7
+		div $s0, $t0
+		mfhi $s0
+		addi $v0, $0, 9
+		addi $a0, $0, 5 # 5 bytes
+		syscall
+		addi $t0, $0, 0
+		beq $s0, $t0, Weekday_case_temp0
+		addi $t0, $t0, 1
+		beq $s0, $t0, Weekday_case_temp1
+		addi $t0, $t0, 1
+		beq $s0, $t0, Weekday_case_temp2
+		addi $t0, $t0, 1
+		beq $s0, $t0, Weekday_case_temp3
+		addi $t0, $t0, 1
+		beq $s0, $t0, Weekday_case_temp4
+		addi $t0, $t0, 1
+		beq $s0, $t0, Weekday_case_temp5
+		j Weekday_case_temp_else
+		Weekday_case_temp0:
+			addi $t0, $0, 'S'
+			sb $t0, 0($v0)
+			addi $t0, $0, 'a'
+			sb $t0, 1($v0)
+			addi $t0, $0, 't'
+			sb $t0, 2($v0)
+			j Weekday_end_func
+		Weekday_case_temp1:
+			addi $t0, $0, 'S'
+			sb $t0, 0($v0)
+			addi $t0, $0, 'u'
+			sb $t0, 1($v0)
+			addi $t0, $0, 'n'
+			sb $t0, 2($v0)
+			j Weekday_end_func
+		Weekday_case_temp2:
+			addi $t0, $0, 'M'
+			sb $t0, 0($v0)
+			addi $t0, $0, 'o'
+			sb $t0, 1($v0)
+			addi $t0, $0, 'n'
+			sb $t0, 2($v0)
+			j Weekday_end_func
+		Weekday_case_temp3:
+			addi $t0, $0, 'T'
+			sb $t0, 0($v0)
+			addi $t0, $0, 'u'
+			sb $t0, 1($v0)
+			addi $t0, $0, 'e'
+			sb $t0, 2($v0)
+			addi $t0, $0, 's'
+			sb $t0, 3($v0)
+			j Weekday_end_func
+		Weekday_case_temp4:
+			addi $t0, $0, 'W'
+			sb $t0, 0($v0)
+			addi $t0, $0, 'e'
+			sb $t0, 1($v0)
+			addi $t0, $0, 'd'
+			sb $t0, 2($v0)
+			j Weekday_end_func
+		Weekday_case_temp5:
+			addi $t0, $0, 'T'
+			sb $t0, 0($v0)
+			addi $t0, $0, 'h'
+			sb $t0, 1($v0)
+			addi $t0, $0, 'u'
+			sb $t0, 2($v0)
+			addi $t0, $0, 'r'
+			sb $t0, 3($v0)
+			addi $t0, $0, 's'
+			sb $t0, 4($v0)
+			j Weekday_end_func
+		Weekday_case_temp_else:
+			addi $t0, $0, 'F'
+			sb $t0, 0($v0)
+			addi $t0, $0, 'r'
+			sb $t0, 1($v0)
+			addi $t0, $0, 'i'
+			sb $t0, 2($v0)
+			j Weekday_end_func
+	Weekday_end_func:
+	lw $ra, 0($sp)
+	lw $a0, 4($sp)
+	lw $a1, 8($sp)
+	lw $a2, 12($sp)
+	lw $a3, 16($sp)
+	lw $s0, 20($sp) #day
+	lw $s1, 24($sp) #month
+	lw $s2, 28($sp) #year
+	lw $s3, 32($sp)
+	addi $sp, $sp, 100
+	jr $ra
+getLeapYearNearest:
+	addi $sp, $sp, -100
+	sw $ra, 0($sp)
+	sw $a0, 4($sp)
+	sw $a1, 8($sp)
+	sw $a2, 12($sp)
+	sw $a3, 16($sp)
+	sw $s0, 20($sp)
+	sw $s1, 24($sp)
+	sw $s2, 28($sp)
+	sw $s3, 32($sp)
+	sw $s4, 36($sp) # res 1
+	sw $s5, 40($sp) # res 2
+	jal Year
+	addi $s0, $v0, 0
+	addi $s4, $0, -1
+	addi $s5, $0, -1
+	addi $s1, $0, 1 # i
+	addi $s2, $0, 8
+	getLeapYearNearest_while:
+		beq $s1, $s2, getLeapYearNearest_end_while
+		sub $s3, $s0, $s1
+		addi $a0, $s3, 0
+		jal isLeapYear
+		bne $v0, $0, getLeapYearNearest_isLeapYear1
+		j getLeapYearNearest_if2
+		getLeapYearNearest_isLeapYear1:
+			addi $t0, $0, -1
+			beq $s4, $t0, getLeapYearNearest_isLeapYear1_year1m1
+			sub $s5, $s0, $s1
+			j getLeapYearNearest_end_func
+			getLeapYearNearest_isLeapYear1_year1m1:
+				sub $s4, $s0, $s1
+		getLeapYearNearest_if2:
+		add $s3, $s0, $s1
+		addi $a0, $s3, 0
+		jal isLeapYear
+		bne $v0, $0, getLeapYearNearest_isLeapYear2
+		j getLeapYearNearest_while_inc_i
+		getLeapYearNearest_isLeapYear2:
+			addi $t0, $0, -1
+			beq $s4, $t0, getLeapYearNearest_isLeapYear2_year1m1
+			add $s5, $s0, $s1
+			j getLeapYearNearest_end_func
+			getLeapYearNearest_isLeapYear2_year1m1:
+				sub $s4, $s0, $s1
+		getLeapYearNearest_while_inc_i:
+		addi $s1, $s1, 1
+		j getLeapYearNearest_while
+	getLeapYearNearest_end_while:
+	getLeapYearNearest_end_func:
+	addi $v0, $s4, 0
+	addi $v1, $s5, 0
+	lw $ra, 0($sp)
+	lw $a0, 4($sp)
+	lw $a1, 8($sp)
+	lw $a2, 12($sp)
+	lw $a3, 16($sp)
+	lw $s0, 20($sp)
+	lw $s1, 24($sp)
+	lw $s2, 28($sp)
+	lw $s3, 32($sp)
+	lw $s4, 36($sp)
+	lw $s5, 40($sp)
+	addi $sp, $sp, 100
+	jr $ra
