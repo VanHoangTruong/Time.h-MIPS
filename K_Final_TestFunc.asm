@@ -79,3 +79,18 @@
 	addi $a0, $v0, 0
 	addi $v0, $0, 1
 	syscall
+	# test Weekday
+	la $a0, test1
+	jal Weekday
+	addi $a0, $v0, 0
+	addi $v0, $0, 4
+	syscall
+	# test getLeapYearNearest
+	la $a0, test1
+	jal getLeapYearNearest
+	addi $a0, $v0, 0
+	addi $v0, $0, 1
+	syscall
+	addi $a0, $v1, 0
+	addi $v0, $0, 1
+	syscall
