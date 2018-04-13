@@ -1,9 +1,212 @@
 .data
+	# test
 	test1: .asciiz "12/04/2018"
 	test2: .asciiz "30/01/1998"
+	# prompt
+	nhap_ngay: .asciiz "Nhap ngay DAY: "
+	nhap_thang: .asciiz "Nhap thang MONTH: "
+	nhap_nam: .asciiz "Nhap nam YEAR: "
+	nhap_lua_chon: .asciiz "Lua chon: "
+	nhap_lai: .asciiz "Hay nhap lai\n"
+	newLine: .asciiz "\n"
+	luachonA: .asciiz "A. MM/DD/YYYY\n"
+	luachonB: .asciiz "B. Month DD, YYYY\n"
+	luachonC: .asciiz "C. DD Month, YYYY\n"
+	# variable
+	day: .asciiz ""
+	month: .asciiz ""
+	year: .asciiz ""
+	choice: .asciiz ""
+	choice_2: .asciiz ""
+	TIME: .asciiz ""
+	TIME1: .asciiz "14/04/2018"
+	TIME2: .asciiz "14/04/2016"
+	
 .text
 main:
+	# pre process global string
+	addi $t0, $0, '\0'
+	la $t1, TIME1
+	sb $t0, 10($t1)
+	la $t1, TIME2
+	sb $t0, 10($t1)
+	# s1: dayInt, s2: monthInt, s3: yearInt, s4: choiceInt
+	# s0: TIME
 	
+	while1:
+		addi $v0, $0, 4
+		la $a0, nhap_ngay
+		syscall
+		addi $v0, $0, 8
+		la $a0, day
+		addi $a1, $0, 20
+		syscall
+		la $s1, day
+		
+		addi $a0, $s1, 0
+		jal convertStringToInt
+		addi $s1, $v0, 0
+		
+		
+		addi $v0, $0, 4
+		la $a0, nhap_thang
+		syscall
+		addi $v0, $0, 8
+		la $a0, month
+		addi $a1, $0, 20
+		syscall
+		la $s2, month
+		
+		addi $a0, $s2, 0
+		jal convertStringToInt
+		addi $s2, $v0, 0
+		
+		
+		addi $v0, $0, 4
+		la $a0, nhap_nam
+		syscall
+		addi $v0, $0, 8
+		la $a0, year
+		addi $a1, $0, 20
+		syscall
+		la $s3, year
+		
+		addi $a0, $s3, 0
+		jal convertStringToInt
+		addi $s3, $v0, 0
+		
+		
+		addi $a0, $s1, 0
+		addi $a1, $s2, 0
+		addi $a2, $s3, 0
+		jal checkDateValid
+		bne $v0, $0, end_while1
+		
+		addi $v0, $0, 4
+		la $a0, nhap_lai
+		syscall
+		j while1
+	end_while1:
+	
+	while2:
+		addi $v0, $0, 4
+		la $a0, nhap_lua_chon
+		syscall
+		addi $v0, $0, 8
+		la $a0, choice
+		addi $a1, $0, 2
+		syscall
+		la $s4, choice
+		
+		addi $a0, $s4, 0
+		jal convertStringToInt
+		addi $s4, $v0, 0
+		
+		addi $a0, $s4, 0
+		addi $a1, $0, 1
+		addi $a2, $0, 7
+		jal checkChoiceValid
+		bne $v0, $0, end_while2
+		addi $v0, $0, 4
+		la $a0, nhap_lai
+		syscall
+		j while2
+	end_while2:
+	
+	la $s0, TIME
+	addi $a0, $s1, 0
+	addi $a1, $s2, 0
+	addi $a2, $s3, 0
+	addi $a3, $s0, 0
+	jal Date
+	
+	la $a0, newLine
+	addi $v0, $0, 4
+	syscall
+	
+	addi $t0, $0, 1
+	beq $s4, $t0, choice1
+	addi $t0, $0, 2
+	beq $s4, $t0, choice2
+	addi $t0, $0, 3
+	beq $s4, $t0, choice3
+	addi $t0, $0, 4
+	beq $s4, $t0, choice4
+	addi $t0, $0, 5
+	beq $s4, $t0, choice5
+	addi $t0, $0, 6
+	beq $s4, $t0, choice6
+	
+	choice1:
+		addi $a0, $s0, 0
+		addi $v0, $0, 4
+		syscall
+		j end_prog
+	choice2:
+		while3:
+		la $a0, luachonA
+		addi $v0, $0, 4
+		syscall
+		la $a0, luachonB
+		addi $v0, $0, 4
+		syscall
+		la $a0, luachonC
+		addi $v0, $0, 4
+		syscall
+		addi $v0, $0, 4
+		la $a0, nhap_lua_chon
+		syscall
+		
+		addi $v0, $0, 12
+		syscall
+		addi $a0, $v0, 0
+		addi $a1, $0, 65
+		addi $a2, $0, 67
+		jal checkChoiceValid
+		beq $v0, $0, while3
+		choiceDone:
+			addi $t0, $a0, 0 # save $a0
+			addi $a0, $s0, 0
+			addi $a1, $t0, 0
+			jal Convert
+			addi $a0, $v0, 0
+			addi $v0, $0, 4
+			syscall
+		j end_prog
+	choice3:
+		addi $a0, $s0, 0
+		jal Weekday
+		addi $a0, $v0, 0
+		addi $v0, $0, 4
+		syscall
+		j end_prog
+	choice4:
+		addi $a0, $s0, 0
+		jal LeapYear
+		addi $a0, $v0, 0
+		addi $v0, $0, 1
+		syscall
+		j end_prog
+	choice5:
+		la $a0, TIME1
+		la $a1, TIME2
+		jal GetTime
+		addi $a0, $v0, 0
+		addi $v0, $0, 1
+		syscall
+		j end_prog
+	choice6:
+		addi $a0, $s0, 0
+		jal getLeapYearNearest
+		addi $a0, $v0, 0
+		addi $v0, $0, 1
+		syscall
+		la $a0, newLine
+		addi $v0, $0, 4
+		syscall
+		addi $a0, $v1, 0
+		addi $v0, $0, 1
+		syscall
 end_prog:
 	addi $v0, $0, 10
 	syscall
@@ -21,6 +224,8 @@ convertStringToInt:
 		lb $t1, 0($a0)
 		addi $t2, $0, '\n'
 		beq $t1, $t2, convertStringToInt_end_func # if input[i] == '\n' break
+		addi $t2, $0, '\0'
+		beq $t1, $t2, convertStringToInt_end_func # if input[i] == '\0' break
 		lb $t1, 0($a0)
 		addi $t2, $0, '0'
 		slt $t0, $t1, $t2 # if input[i] < '0'
@@ -53,11 +258,6 @@ isLeapYear:
 	sw $a1, 8($sp)
 	sw $a2, 12($sp)
 	sw $a3, 16($sp)
-	sw $t0, 20($sp)
-	sw $t1, 24($sp)
-	sw $t2, 28($sp)
-	sw $t3, 32($sp)
-	sw $t4, 36($sp)
 	isLeapYear_if_input_mod_4_e_0:
 		addi $t0, $0, 4
 		div $a0, $t0
@@ -96,7 +296,7 @@ checkDateValid:
 	sw $a1, 8($sp)
 	sw $a2, 12($sp)
 	sw $a3, 16($sp)
-	
+	sw $s0, 20($sp)
 	addi $t1, $0, 1
 	# if day < 1
 	slt $t0, $a0, $t1
@@ -117,10 +317,10 @@ checkDateValid:
 	bne $t0, $0, checkDateValid_return_0 #end_if
 	#
 	addi $t2, $0, 28 # Feb has 28 days
-	addi $t0, $a0, 0 # save $a0
+	addi $s0, $a0, 0 # save $a0
 	addi $a0, $a2, 0 
 	jal isLeapYear # check leap year
-	addi $a0, $t0, 0 # restore $a0
+	addi $a0, $s0, 0 # restore $a0
 	addi $t0, $v0, 0
 	bne $t0, $0, checkDateValid_set_max_Feb # if leap year
 	j checkDateValid_check_month
@@ -173,9 +373,11 @@ checkDateValid:
 	lw $a1, 8($sp)
 	lw $a2, 12($sp)
 	lw $a3, 16($sp)
+	lw $s0, 20($sp)
 	addi $sp, $sp, 100
 	jr $ra
 checkChoiceValid:
+	# a0, a1, a2, check if a1<=a0<-a2
 	addi $sp, $sp, -100
 	sw $ra, 0($sp)
 	sw $a0, 4($sp)
@@ -183,10 +385,10 @@ checkChoiceValid:
 	sw $a2, 12($sp)
 	sw $a3, 16($sp)
 	
-	addi $t1, $0, 1
+	addi $t1, $a1, 0
 	slt $t0, $a0, $t1
 	bne $t0, $0, checkChoiceValid_return_0
-	addi $t1, $0, 7
+	addi $t1, $a2, 0
 	slt $t0, $t1, $a0
 	bne $t0, $0, checkChoiceValid_return_0
 	j checkChoiceValid_return_1
