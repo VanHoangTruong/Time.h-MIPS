@@ -1,6 +1,6 @@
 .data
 	# test
-	test1: .asciiz "12/04/2018"
+	test1: .asciiz "30/01/1998"
 	test2: .asciiz "30/01/1998"
 	# prompt
 	nhap_ngay: .asciiz "Nhap ngay DAY: "
@@ -19,20 +19,21 @@
 	choice: .asciiz ""
 	choice_2: .asciiz ""
 	TIME: .asciiz ""
-	TIME1: .asciiz "14/04/2018"
-	TIME2: .asciiz "14/04/2016"
+	TIME_3: .asciiz "30/01/1998"
+	TIME_1: .asciiz "30/01/1998"
+	TIME_2: .asciiz "07/04/2016"
+	
 	
 .text
-main:
+main:	
 	# pre process global string
 	addi $t0, $0, '\0'
-	la $t1, TIME1
+	la $t1, TIME_1
 	sb $t0, 10($t1)
-	la $t1, TIME2
+	la $t1, TIME_2
 	sb $t0, 10($t1)
 	# s1: dayInt, s2: monthInt, s3: yearInt, s4: choiceInt
 	# s0: TIME
-	
 	while1:
 		addi $v0, $0, 4
 		la $a0, nhap_ngay
@@ -86,7 +87,7 @@ main:
 		la $a0, nhap_lai
 		syscall
 		j while1
-	end_while1:
+	end_while1:	
 	
 	while2:
 		addi $v0, $0, 4
@@ -188,8 +189,8 @@ main:
 		syscall
 		j end_prog
 	choice5:
-		la $a0, TIME1
-		la $a1, TIME2
+		la $a0, TIME_1
+		la $a1, TIME_2
 		jal GetTime
 		addi $a0, $v0, 0
 		addi $v0, $0, 1
@@ -207,6 +208,7 @@ main:
 		addi $a0, $v1, 0
 		addi $v0, $0, 1
 		syscall
+		j end_prog
 end_prog:
 	addi $v0, $0, 10
 	syscall
@@ -413,9 +415,9 @@ Date:
 	sw $a1, 8($sp)
 	sw $a2, 12($sp)
 	sw $a3, 16($sp)
-	sw $s0, 20($sp)
+	sw $s1, 20($sp)
 	
-	addi $s0, $0, '/'
+	addi $s1, $0, '/'
 	
 	addi $t0, $0, 10
 	div $a0, $t0
@@ -425,7 +427,7 @@ Date:
 	mfhi $t1 # day % 10
 	addi $t1, $t1, '0'
 	sb $t1, 1($a3)
-	sb $s0, 2($a3)
+	sb $s1, 2($a3)
 
 	div $a1, $t0
 	mflo $t1 # month /10
@@ -434,7 +436,7 @@ Date:
 	mfhi $t1 # month % 10
 	addi $t1, $t1, '0'
 	sb $t1, 4($a3)
-	sb $s0, 5($a3)
+	sb $s1, 5($a3)
 	
 	div $a2, $t0
 	mfhi $t1
@@ -455,8 +457,8 @@ Date:
 	mfhi $t1
 	addi $t1, $t1, '0'
 	sb $t1, 6($a3)
-	addi $s0, $0, '\0'
-	sb $s0, 10($a3)
+	addi $s1, $0, '\0'
+	sb $s1, 10($a3)
 	addi $v0, $a3, 0
 	Date_end_func:
 	lw $ra, 0($sp)
@@ -464,7 +466,7 @@ Date:
 	lw $a1, 8($sp)
 	lw $a2, 12($sp)
 	lw $a3, 16($sp)
-	lw $s0, 20($sp)
+	lw $s1, 20($sp)
 	addi $sp, $sp, 100
 	jr $ra
 Day:
@@ -848,7 +850,7 @@ GetTime:
 	addi $a0, $s1, 0
 	addi $s1, $v0, 0
 	
-	beq $s0, $s2, GetTime_year1_eq_year2
+	beq $s0, $s1, GetTime_year1_eq_year2
 	slt $t0, $s0, $s1
 	bne $t0, $0, GetTime_year1_lt_year2
 		# year_2_lt_year 1
